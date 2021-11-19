@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 
 let expenses = [
     {
@@ -35,6 +35,9 @@ let recipes = [
     },
 ];
 
+let mainWindow = null;
+let targetAddItemId = null;
+
 /**
  * Calcule la balance financière
  * @param recipes
@@ -48,31 +51,62 @@ function generateBalanceSheet(recipes, expenses) {
     return sumRecipes - sumExpenses;
 }
 
-
-function createWindow() {
+/**
+ * Créer une fenêtre
+ * @param {string} pathFile
+ * @param {number} width
+ * @param {number} height
+ * @return {Electron.BrowserWindow}
+ */
+function createWindow(pathFile, width = 1200, height = 800) {
     let win = new BrowserWindow({
-        width: 1200,
-        height: 800,
+        width: width,
+        height: height,
         webPreferences: {
             nodeIntegration: true,
         },
     });
 
-    win.loadFile('views/home/home.html');
+    win.loadFile(pathFile);
 
-    win.webContents.once('did-finish-load', () => {
-        win.send('store-data', {
-            expensesData: expenses,
-            recipesData: recipes,
-            balanceSheet: generateBalanceSheet(recipes, expenses)
-        });
-    })
-
-    win.on('closed', () => {
-        win = null;
-    });
+    win.on('closed', () => { win = null; });
 
     return win;
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    mainWindow = createWindow('views/home/home.html');
+
+    mainWindow.webContents.once('did-finish-load', () => {
+        mainWindow.send('store-data', {
+            expensesData: expenses,
+            recipesData: recipes,
+            balanceSheet: generateBalanceSheet(recipes, expenses)
+        });
+    });
+});
+
+ipcMain.on('open-new-item-window', (event, data) => {
+    const win = createWindow('./views/addItem/addItem.html', 500, 450);
+    targetAddItemId = data;
+    win.on('closed', () => { targetAddItemId = null; });
+});
+
+ipcMain.on('add-new-item', (event, newItem) => {
+   let newId = 1;
+   let arrayForAdd = recipes;
+   if (targetAddItemId === 'addExpenses') arrayForAdd = expenses;
+
+   if (arrayForAdd.length > 0) {
+       newId = arrayForAdd[arrayForAdd.length - 1].id + 1;
+   }
+
+   newItem.id = newId;
+   arrayForAdd.push(newItem);
+
+   mainWindow.webContents.send('update-with-new-item', {
+       newItem: [newItem],
+       balanceSheet: generateBalanceSheet(recipes, expenses),
+       targetId: targetAddItemId
+   });
+})

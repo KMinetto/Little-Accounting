@@ -1,5 +1,9 @@
 const { ipcRenderer } = require('electron');
 
+//================== HTML Elements ==================//
+const addExpenses = document.getElementById('addExpenses');
+const addRecipes = document.getElementById('addRecipes');
+
 //================== Functions ==================//
 /**
  * Créer les élements des tableaux dépenses/recettes
@@ -71,4 +75,29 @@ ipcRenderer.on('store-data', (event, data) => {
     generateTableRow('recipesTbody', data.recipesData);
     generateTableRow('expensesTbody', data.expensesData);
     updateBalanceSheet(data.balanceSheet);
+});
+
+ipcRenderer.on('update-with-new-item', (event, data) => {
+    // console.log(data);
+   let tableId = 'expensesTbody';
+   if (data.targetId === 'addRecipes') tableId = 'recipesTbody';
+    generateTableRow(tableId, data.newItem);
+    updateBalanceSheet(data.balanceSheet);
+});
+
+/**
+ * Envoi les informations au main.js
+ * @param event
+ */
+function openWindowAddItem(event) {
+    ipcRenderer.send('open-new-item-window', event.id);
+}
+
+//================== Events ==================//
+addExpenses.addEventListener('click', event => {
+    openWindowAddItem(addExpenses);
+});
+
+addRecipes.addEventListener('click', event => {
+    openWindowAddItem(addRecipes);
 });
