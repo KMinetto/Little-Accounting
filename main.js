@@ -1,39 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 
-let expenses = [
-    {
-        id: 1,
-        label: 'Achat huile moteur',
-        value: 80,
-    },
-    {
-        id: 2,
-        label: 'Achat joint vidange',
-        value: 10,
-    },
-    {
-        id: 3,
-        label: 'Achat filtre à huile',
-        value: 20,
-    },
-    {
-        id: 4,
-        label: 'Materiel divers',
-        value: 1020,
-    },
-];
-let recipes = [
-    {
-        id: 1,
-        label: 'Vidange véhicule',
-        value: 150,
-    },
-    {
-        id: 2,
-        label: 'Réparation véhicule',
-        value: 550,
-    },
-];
+let expenses = [];
+let recipes = [];
 
 let mainWindow = null;
 let targetAddItemId = null;
@@ -109,4 +77,19 @@ ipcMain.on('add-new-item', (event, newItem) => {
        balanceSheet: generateBalanceSheet(recipes, expenses),
        targetId: targetAddItemId
    });
+});
+
+ipcMain.on('delete-item', (event, data) => {
+    let arrayForDelete = recipes;
+    if (data.typeItem === 'Expense') arrayForDelete = expenses;
+
+    for (let i = 0; i < arrayForDelete.length; i++) {
+        if (arrayForDelete[i].id === data.id) {
+            arrayForDelete.splice(i, 1);
+            break;
+        }
+    }
+
+    data.balanceSheet = generateBalanceSheet(recipes, expenses);
+    event.sender.send('update-delete-item', data);
 })

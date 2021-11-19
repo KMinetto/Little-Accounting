@@ -3,8 +3,6 @@ const { ipcRenderer } = require('electron');
 //================== HTML Elements ==================//
 const addItem = document.getElementById('addItem');
 
-
-
 //================== Events ==================//
 addItem.addEventListener('submit', event => {
   event.preventDefault();
