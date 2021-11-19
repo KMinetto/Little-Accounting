@@ -10,6 +10,8 @@
         <link rel="stylesheet" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
         <!-- Import Fontawesome -->
         <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+        <!-- Import Css Fils -->
+        <link rel="stylesheet" href="./home.css">
         <title>Little Accounting</title>
     </head>
     <body>
@@ -23,7 +25,11 @@
             <!-- Tables -->
             <div class="row">
                 <div class="col text-center">
-                    <h4 class="mb-3">DÉPENSES <i class="fa fa-credit-card"></i></h4>
+                    <div class="d-flex justify-content-around">
+                        <i class="fa-2x fas fa-credit-card"></i>
+                        <h4 class="mb-3">DÉPENSES</h4>
+                        <i id="addExpenses" class="fa-2x fas fa-plus-circle"></i>
+                    </div>
                     <!-- Table expenses -->
                     <table class="table table-danger table-borderless">
                         <thead>
@@ -39,7 +45,11 @@
                     <!-- End Table Expenses -->
                 </div>
                 <div class="col text-center">
-                    <h4 class="mb-3">RECETTES <i class="fa fa-coins"></i></h4>
+                    <div class="d-flex justify-content-around">
+                        <i class="fa-2x fas fa-coins"></i>
+                        <h4 class="mb-3">RECETTES</h4>
+                        <i id="addRecipes" class="fa-2x fas fa-plus-circle"></i>
+                    </div>
                     <!-- Table Recipes -->
                     <table class="table table-success table-borderless">
                         <thead>

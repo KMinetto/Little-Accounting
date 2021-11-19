@@ -1,0 +1,8 @@
+.fa-plus-circle {
+    transition: all .2s ease-in-out;
+}
+
+.fa-plus-circle:hover {
+    color: #28A745;
+    cursor: pointer;
+}
