@@ -6,3 +6,9 @@
     color: #28A745;
     cursor: pointer;
 }
+
+#expensesAction,
+#recipesAction
+{
+    display: none;
+}

@@ -1,5 +1,5 @@
 const { ipcRenderer } = require('electron');
-const { dialog } = require('electron').remote;
+const { dialog, Menu, MenuItem, getCurrentWindow } = require('electron').remote;
 
 //================== HTML Elements ==================//
 const addExpenses = document.getElementById('addExpenses');
@@ -48,6 +48,8 @@ function createTBodyElements(rowData, typeItem) {
     tr.appendChild(tdValue);
 
     const tdButtons = document.createElement('td');
+    tdButtons.setAttribute('id', `cells${typeItem}_${rowData.id}`);
+    tdButtons.style.display = 'none';
     const buttonMod = document.createElement('button');
     buttonMod.setAttribute('id', `modify${typeItem}_${rowData.id}`);
     buttonMod.setAttribute('class', 'btn btn-outline-warning me-2');
@@ -95,6 +97,26 @@ function updateBalanceSheet(newBalanceSheet) {
     }
 }
 
+function toggleEditionMode() {
+    const expensesActionElem = document.getElementById('expensesAction');
+    const recipesActionElem = document.getElementById('recipesAction');
+    const expensesCellsElems = document.querySelectorAll('*[id^="cellsExpense_"]');
+    const recipesCellsElems = document.querySelectorAll('*[id^="cellsRecipe_"]');
+
+    if (expensesActionElem.style.display === 'none' && recipesActionElem.style.display === 'none') {
+        expensesActionElem.style.display = 'block';
+        recipesActionElem.style.display = 'block';
+        expensesCellsElems.forEach(cell => cell.style.display = 'block');
+        recipesCellsElems.forEach(cell => cell.style.display = 'block');
+    }
+    else {
+        expensesActionElem.style.display = 'none';
+        recipesActionElem.style.display = 'none';
+        expensesCellsElems.forEach(cell => cell.style.display = 'none');
+        recipesCellsElems.forEach(cell => cell.style.display = 'none');
+    }
+}
+
 //================== IPC Methods ==================//
 ipcRenderer.on('store-data', (event, data) => {
     generateTableRow('recipesTbody', data.recipesData, 'Recipe');
@@ -124,7 +146,11 @@ function openWindowAddItem(event) {
 ipcRenderer.on('update-delete-item', (event, data) => {
     document.getElementById(`row${data.typeItem}_${data.id}`).remove();
     updateBalanceSheet(data.balanceSheet);
-})
+});
+
+ipcRenderer.on('toggle-edition-mode', (event, data) => {
+    toggleEditionMode();
+});
 
 //================== Events ==================//
 addExpenses.addEventListener('click', event => {
@@ -133,4 +159,25 @@ addExpenses.addEventListener('click', event => {
 
 addRecipes.addEventListener('click', event => {
     openWindowAddItem(addRecipes);
+});
+
+window.addEventListener('load', event => {
+   const  menu = new Menu();
+   menu.append(new MenuItem({
+       label: 'Nouvelle dépense',
+       click() { openWindowAddItem({ target: { id: 'addExpenses' } }); }
+   }));
+    menu.append(new MenuItem({
+        label: 'Nouvelle recette',
+        click() { openWindowAddItem({ target: { id: 'addRecipes' } }); }
+    }));
+    menu.append(new MenuItem({
+        label: 'Activer/Désactiver Mode Edition',
+        click() { toggleEditionMode(); }
+    }));
+
+    document.addEventListener('contextmenu', event => {
+        event.preventDefault();
+        menu.popup({ window: getCurrentWindow() });
+    });
 });

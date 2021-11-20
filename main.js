@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 
 let expenses = [];
 let recipes = [];
@@ -92,4 +92,66 @@ ipcMain.on('delete-item', (event, data) => {
 
     data.balanceSheet = generateBalanceSheet(recipes, expenses);
     event.sender.send('update-delete-item', data);
-})
+});
+
+// config menu
+const templateMenu = [
+    {
+        label: 'Action',
+        submenu: [
+            {
+                label: 'Nouvelle dépense',
+                accelerator: 'CommandOrControl+N',
+                click() {
+                    const win = createWindow('./views/addItem/addItem.html', 500, 450);
+                    targetAddItemId = 'addExpenses';
+                    win.on('closed', () => {
+                        targetAddItemId = null;
+                    });
+                }
+            },
+            {
+                label: 'Nouvelle recette',
+                accelerator: 'CommandOrControl+B',
+                click() {
+                    const win = createWindow('./views/addItem/addItem.html', 500, 450);
+                    targetAddItemId = 'addRecipes';
+                    win.on('closed', () => {
+                        targetAddItemId = null;
+                    });
+                }
+            },
+            {
+                label: 'Activer/Désactiver Mode Edition',
+                accelerator: 'CommandOrControl+E',
+                click() {
+                    mainWindow.webContents.send('toggle-edition-mode');
+                }
+            },
+        ],
+    },
+    {
+        label: 'Fenêtre',
+        submenu: [
+            { role: 'reload' },
+            { role: 'toggledevtools' },
+            { role: 'separator' },
+            { role: 'togglefullscreen' },
+            { role: 'minimize' },
+            { role: 'separator' },
+            { role: 'close' },
+        ]
+    }
+];
+
+if (process.platform === 'darwin') {
+    templateMenu.unshift({
+        label: app.name,
+        submenu: [
+            { role: 'quit' }
+        ]
+    });
+}
+
+const menu = Menu.buildFromTemplate(templateMenu);
+Menu.setApplicationMenu(menu);
