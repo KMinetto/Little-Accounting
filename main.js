@@ -94,6 +94,30 @@ ipcMain.on('delete-item', (event, data) => {
     event.sender.send('update-delete-item', data);
 });
 
+ipcMain.on('open-update-item-window', (event, data) => {
+    const win = createWindow('views/updateItem/updateItem.html', 500, 450);
+
+    win.webContents.once('did-finish-load', () => {
+        win.send('item-data', data);
+    });
+});
+
+ipcMain.on('update-item', (event, data) => {
+    let arrayForUpdate = recipes;
+    if (data.typeItem === 'Expense') arrayForUpdate = expenses;
+    for (let i = 0; i < arrayForUpdate.length; i++) {
+        if (arrayForUpdate[i].id === data.item.id) {
+            arrayForUpdate[i].label = data.item.label;
+            arrayForUpdate[i].value = data.item.value;
+            break;
+        }
+    }
+
+    data.balanceSheet = generateBalanceSheet(recipes, expenses);
+
+    mainWindow.webContents.send('updated-item', data );
+});
+
 // config menu
 const templateMenu = [
     {

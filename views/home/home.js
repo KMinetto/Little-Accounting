@@ -40,10 +40,12 @@ function createTBodyElements(rowData, typeItem) {
     tr.appendChild(th);
 
     const tdLabel = document.createElement('td');
+    tdLabel.setAttribute('id', `label${typeItem}_${rowData.id}`);
     tdLabel.innerText = rowData.label;
     tr.appendChild(tdLabel);
 
     const tdValue = document.createElement('td');
+    tdValue.setAttribute('id', `value${typeItem}_${rowData.id}`);
     tdValue.innerText = rowData.value;
     tr.appendChild(tdValue);
 
@@ -65,7 +67,12 @@ function createTBodyElements(rowData, typeItem) {
     buttonSuppr.addEventListener('click', event => {
         event.preventDefault();
         deleteButton(rowData.id, typeItem);
-    })
+    });
+
+    buttonMod.addEventListener('click', event => {
+       event.preventDefault();
+       ipcRenderer.send('open-update-item-window', { item: rowData, typeItem: typeItem });
+    });
 
     return tr;
 }
@@ -150,6 +157,16 @@ ipcRenderer.on('update-delete-item', (event, data) => {
 
 ipcRenderer.on('toggle-edition-mode', (event, data) => {
     toggleEditionMode();
+});
+
+ipcRenderer.on('updated-item', (event, data) => {
+    console.log(data);
+    document.getElementById(`label${data.typeItem}_${data.item.id}`)
+        .innerText = data.item.label;
+    document.getElementById(`value${data.typeItem}_${data.item.id}`)
+        .innerText = data.item.value + ' €';
+
+    updateBalanceSheet(data.balanceSheet);
 });
 
 //================== Events ==================//
