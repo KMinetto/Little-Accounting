@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="content-security-policy" content="script-src 'self' 'unsafe-inline';">
+    <!-- Import Bootstrap CSS -->
+    <link rel="stylesheet" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <!-- Import Fontawesome -->
+    <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+    <!-- Import Css Fils -->
+
+    <title>Little Accounting | Modifier une opération</title>
+</head>
+<body>
+<!-- Title -->
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12 text-center">
+            <h1 class="mt-5 mb-5">Modifier une opération</h1>
+        </div>
+    </div>
+    <!--End Title -->
+    <div class="row">
+        <div class="col text-center">
+            <!-- Form -->
+            <form id="updateItem">
+                <!-- Form Label -->
+                <div class="form-group mt-2">
+                    <label for="itemLabel">Nom de l'opération</label>
+                    <input id="itemLabel" class="form-control mt-3" name="label" type="text" placeholder="Intitulé de l'opération...">
+                </div>
+                <!-- End Form Label -->
+                <!-- Form Value -->
+                <div class="form-group mt-3">
+                    <label for="itemValue">Prix de l'opération</label>
+                    <input id="itemValue" class="form-control mt-3" name="value" type="number" max="100000" placeholder="Valeur de l'opération...">
+                </div>
+                <!-- End Form Value -->
+                <button type="submit" class="btn btn-dark mt-3">Modifier</button>
+            </form>
+            <!-- End Form -->
+        </div>
+    </div>
+</div>
+<!-- End Title -->
+<!-- Import Bootstrap JS -->
+<script>
+    window.jquery = window.$ = require('jquery');
+    require('bootstrap');
+</script>
+<!-- Import home.js -->
+<script src="./updateItem.js"></script>
+</body>
+</html>
