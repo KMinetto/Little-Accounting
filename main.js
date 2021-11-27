@@ -46,7 +46,9 @@ function createWindow(pathFile, width = 1200, height = 800) {
         height: height,
         webPreferences: {
             nodeIntegration: true,
+            devTools: false
         },
+        icon: path.join(__dirname, 'assets/img/icon.png')
     });
 
     win.loadFile(pathFile);
@@ -276,7 +278,6 @@ const templateMenu = [
         label: 'Fenêtre',
         submenu: [
             { role: 'reload' },
-            { role: 'toggledevtools' },
             { role: 'separator' },
             { role: 'togglefullscreen' },
             { role: 'minimize' },
