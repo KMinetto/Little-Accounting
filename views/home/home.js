@@ -46,7 +46,7 @@ function createTBodyElements(rowData, typeItem) {
 
     const tdValue = document.createElement('td');
     tdValue.setAttribute('id', `value${typeItem}_${rowData.id}`);
-    tdValue.innerText = rowData.value;
+    tdValue.innerText = rowData.value + ' €';
     tr.appendChild(tdValue);
 
     const tdButtons = document.createElement('td');
