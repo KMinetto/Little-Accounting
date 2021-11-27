@@ -5,6 +5,9 @@ const { dialog, Menu, MenuItem, getCurrentWindow } = require('electron').remote;
 const addExpenses = document.getElementById('addExpenses');
 const addRecipes = document.getElementById('addRecipes');
 
+let toastContent = '';
+let toastTitle = '';
+
 //================== Functions ==================//
 function deleteButton(rowId, typeItem) {
     dialog.showMessageBox({
@@ -124,6 +127,18 @@ function toggleEditionMode() {
     }
 }
 
+function displayToast(toastTitleId, toastContentId, toastClass, title, content) {
+    toastTitleId.innerText = title;
+
+    toastContentId.innerText = content;
+
+    toastClass.style.display = 'block';
+
+    setTimeout(() => {
+        toastClass.style.display = 'none';
+    }, 2000);
+}
+
 //================== IPC Methods ==================//
 ipcRenderer.on('store-data', (event, data) => {
     generateTableRow('recipesTbody', data.recipesData, 'Recipe');
@@ -153,6 +168,15 @@ function openWindowAddItem(event) {
 ipcRenderer.on('update-delete-item', (event, data) => {
     document.getElementById(`row${data.typeItem}_${data.id}`).remove();
     updateBalanceSheet(data.balanceSheet);
+
+    const toastTitleId = document.getElementById('toast-title');
+    const toastContentId = document.getElementById('toast-content');
+    const toastClass = document.querySelector('.toast');
+    toastTitle = 'Suppression de l\'opération';
+    toastContent = 'L\'élément a bien été supprimé';
+
+    displayToast(toastTitleId, toastContentId, toastClass, toastTitle, toastContent);
+
 });
 
 ipcRenderer.on('toggle-edition-mode', (event, data) => {
@@ -167,6 +191,14 @@ ipcRenderer.on('updated-item', (event, data) => {
         .innerText = data.item.value + ' €';
 
     updateBalanceSheet(data.balanceSheet);
+
+    const toastTitleId = document.getElementById('toast-title');
+    const toastContentId = document.getElementById('toast-content');
+    const toastClass = document.querySelector('.toast');
+    toastTitle = 'Mise à jour réussie';
+    toastContent = 'L\'opération a bien été mis à jour';
+
+    displayToast(toastTitleId, toastContentId, toastClass, toastTitle, toastContent);
 });
 
 //================== Events ==================//

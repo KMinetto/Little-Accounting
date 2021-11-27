@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, dialog, Notification, nativeImage } = require('electron');
 const path = require("path");
 const csv = require("csvtojson");
 
@@ -56,6 +56,17 @@ function createWindow(pathFile, width = 1200, height = 800) {
     return win;
 }
 
+function showDesktopNotification(title, body, imgPath, textButton) {
+    const notification = new Notification({
+        title,
+        body,
+        icon: nativeImage.createFromPath(imgPath),
+        closeButtonText: textButton
+    });
+
+    notification.show();
+}
+
 app.whenReady().then(() => {
     mainWindow = createWindow('views/home/home.html');
 
@@ -79,14 +90,16 @@ ipcMain.on('add-new-item', (event, newItem) => {
    let storeKey = 'recipes';
 
    newItem.id = getLastIdArray(arrayForAdd);
-  
+
    if (targetAddItemId === 'addExpenses') {
        arrayForAdd = expenses;
        storeKey = 'expenses';
    }
-  
+
    arrayForAdd.push(newItem);
    store.set(storeKey, arrayForAdd);
+
+   showDesktopNotification('Ajout D\'une nouvelle opération réussi', 'L\'opération a été ajouté avec succés !', path.join(__dirname, '/assets/img/checked.png', 'Fermer'));
 
    mainWindow.webContents.send('update-with-new-item', {
        newItem: [newItem],
