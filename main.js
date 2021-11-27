@@ -1,10 +1,15 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
+const path = require("path");
+const csv = require("csvtojson");
 
-let expenses = [];
-let recipes = [];
+Store = require('electron-store');
+const store = new Store();
 
 let mainWindow = null;
 let targetAddItemId = null;
+
+let expenses = store.has('expenses') ? store.get('expenses') : [];
+let recipes = store.has('recipes') ? store.get('recipes') : [];
 
 /**
  * Calcule la balance financière
@@ -17,6 +22,15 @@ function generateBalanceSheet(recipes, expenses) {
     const sumExpenses = expenses.reduce((a, b) => a + (parseFloat(b.value) || 0), 0);
 
     return sumRecipes - sumExpenses;
+}
+
+function getLastIdArray(array) {
+
+    if (array.length > 0) {
+        return array[array.length - 1].id + 1;
+    }
+
+    return 1;
 }
 
 /**
@@ -61,15 +75,10 @@ ipcMain.on('open-new-item-window', (event, data) => {
 });
 
 ipcMain.on('add-new-item', (event, newItem) => {
-   let newId = 1;
    let arrayForAdd = recipes;
    if (targetAddItemId === 'addExpenses') arrayForAdd = expenses;
 
-   if (arrayForAdd.length > 0) {
-       newId = arrayForAdd[arrayForAdd.length - 1].id + 1;
-   }
-
-   newItem.id = newId;
+   newItem.id = getLastIdArray(arrayForAdd);
    arrayForAdd.push(newItem);
 
    mainWindow.webContents.send('update-with-new-item', {
@@ -150,6 +159,85 @@ const templateMenu = [
                 accelerator: 'CommandOrControl+E',
                 click() {
                     mainWindow.webContents.send('toggle-edition-mode');
+                }
+            },
+            {
+                label: 'Exporter les données',
+                accelerator: 'CommandOrControl+T',
+                click() {
+                    const objectsToCsv = require('objects-to-csv');
+
+                    // Save recipes to file
+                    let recipesCsv = new objectsToCsv(recipes);
+                    recipesCsv.toDisk(path.join(app.getPath('downloads'), '/recettes.csv'), { append: true });
+
+                    // Save expenses to files
+                    let expensesCsv = new objectsToCsv(expenses);
+                    expensesCsv.toDisk(path.join(app.getPath('downloads'), '/dépenses.csv'), { append: true });
+                }
+            },
+            {
+                label: 'Importer des recettes',
+                click() {
+                    dialog.showOpenDialog(mainWindow, {
+                        properties: ['openFile'],
+                        filtres: [
+                            { name: 'Fichiers de données', extensions: ['csv'] }
+                        ]
+                    }).then(response => {
+                            if (!response.canceled) {
+                                const csv = require('csvtojson');
+                                csv()
+                                    .fromFile(response.filePaths[0])
+                                    .then((jsonObj) => {
+                                        let newId = getLastIdArray(recipes);
+                                        jsonObj.forEach((item) => {
+                                            item.id = newId;
+                                            newId++;
+                                        });
+
+                                        recipes = recipes.concat(jsonObj);
+                                        store.set('recipes', recipes);
+                                        mainWindow.send('update-with-new-item', {
+                                            newItem: jsonObj,
+                                            balanceSheet: generateBalanceSheet(recipes, expenses),
+                                            targetId: 'addRecipes'
+                                        });
+                                    })
+                            }
+                    }).catch(error => console.error(error));
+                }
+            },
+            {
+                label: 'Importer des dépenses',
+                click() {
+                    dialog.showOpenDialog(mainWindow, {
+                        properties: ['openFile'],
+                        filtres: [
+                            { name: 'Fichiers de données', extensions: ['csv'] }
+                        ]
+                    }).then(response => {
+                        if (!response.canceled) {
+                            const csv = require('csvtojson');
+                            csv()
+                                .fromFile(response.filePaths[0])
+                                .then((jsonObj) => {
+                                    let newId = getLastIdArray(expenses);
+                                    jsonObj.forEach((item) => {
+                                        item.id = newId;
+                                        newId++;
+                                    });
+
+                                    expenses = expenses.concat(jsonObj);
+                                    store.set('expenses', expenses);
+                                    mainWindow.send('update-with-new-item', {
+                                        newItem: jsonObj,
+                                        balanceSheet: generateBalanceSheet(recipes, expenses),
+                                        targetId: 'addExpenses'
+                                    });
+                                })
+                        }
+                    }).catch(error => console.error(error));
                 }
             },
         ],
